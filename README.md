@@ -38,7 +38,7 @@ earthengine authenticate
 
 ## Run pipeline
 
-Default (**cached** rebuild — skips GEE and GDELT Doc API):
+Default (**cached** rebuild — skips GEE):
 
 ```bash
 ./scripts/run_pipeline.sh
@@ -47,7 +47,6 @@ Default (**cached** rebuild — skips GEE and GDELT Doc API):
 | Flag | Default | Meaning |
 | --- | --- | --- |
 | `SKIP_GEE` | `1` | Skip `satellite.py`; use cached `flood_extent` / `sits_scores` / `flood_combined` |
-| `SKIP_ARTICLES` | `1` | Skip archived Doc API collector; **MSS always reads `data/raw/gdelt_bq.json`** |
 | `SETUP_DEPS` | `0` | Set to `1` to reinstall `requirements.txt` into `venv/` |
 
 Examples:
@@ -64,7 +63,7 @@ SETUP_DEPS=1 ./scripts/run_pipeline.sh
 
 | Mode | Needs | Notes |
 | --- | --- | --- |
-| Cached (`SKIP_GEE=1`) | `data/intermediate/flood_combined.csv` or (`data/cache/flood_extent.csv` + `data/cache/sits_scores/`), `data/raw/gdelt_bq.json` | Default; no network GEE/GDELT Doc |
+| Cached (`SKIP_GEE=1`) | `data/intermediate/flood_combined.csv` or (`data/cache/flood_extent.csv` + `data/cache/sits_scores/`), `data/raw/gdelt_bq.json` | Default; no network GEE |
 | Full GEE (`SKIP_GEE=0`) | EE credentials, district AOIs | Writes flood extent / sits patches; Colab inference → `sits_scores/` |
 
 SITS scores are produced outside the runner (Colab notebook after Track B patches),
@@ -75,7 +74,7 @@ then `merge_results.py` builds `data/intermediate/flood_combined.csv`.
 | Stage | Status |
 | --- | --- |
 | `data/raw/gdelt_bq.json` → `compute_mss.py` | **Primary** |
-| `src/archive/news.py` (Doc API → `raw_gdelt.csv`) | Optional / legacy; does not feed current MSS |
+| `src/archive/news.py` (Doc API → `raw_gdelt.csv`) | Archived only; not invoked by the pipeline |
 | `src/archive/process_bigquery.py` | Orphan (early 12-event era) |
 
 Column `n_articles_0_14` in expected-coverage outputs is a **proxy alias** for

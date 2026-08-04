@@ -355,7 +355,6 @@ deaths.loc[i] = float(hits.max())
 | `visualize.py:plot_coverage_map()` | 주별 평균을 `n_events` 무관하게 동일 색으로 표시(1건 vs 12건) | 투명도/해칭으로 n 반영, 또는 축소추정(shrinkage) 평균 |
 | `visualize.py:plot_log_ratio_by_income()` | 오차막대가 단순 SEM(클러스터 무시) — 제목에 언급은 있으나 그림은 오해 유발 | 클러스터 로버스트 CI로 교체 |
 | `satellite.py:detect_flood_baseline()` | `combined = s2_area if s2_area>0 else area_km2` — 크기 무관하게 S2 우선. `flood_extent.affected_area_km2`는 이제 아무도 안 쓰는 유령 컬럼 | 컬럼 삭제 또는 `merge_results`와 규칙 통일 |
-| `run_pipeline.sh` | `SKIP_ARTICLES=0`이면 `src/archive/news.py`를 실행하지만 그 출력은 MSS에 쓰이지 않음(스크립트도 이를 출력으로 인정) | 옵션 제거 |
 | `run_pipeline.sh` | `district_area.py`/`post_cloud.py`가 단계에 없어, CSV가 없으면 `flood_ratio`가 조용히 전부 None | 선택 단계로 추가하거나 부재 시 에러 |
 | `build_events_emdat.py` | `existing_keys` 계산 후 미사용(죽은 코드), 필터 주석 "2015-2024"인데 코드는 `<=2026` | 정리 |
 | `build_events_emdat.py:is_valid_district()` | 숫자 코드(`72811`)를 유효 구역명으로 통과 | 문자 포함 검사 추가 |

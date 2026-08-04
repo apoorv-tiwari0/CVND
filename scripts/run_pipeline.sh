@@ -45,7 +45,6 @@ setup_environment() {
 setup_environment
 
 SKIP_GEE="${SKIP_GEE:-1}"
-SKIP_ARTICLES="${SKIP_ARTICLES:-1}"
 
 STEPS=()
 
@@ -66,14 +65,6 @@ fi
 
 STEPS+=("src/compute_pss.py")
 
-if [[ "$SKIP_ARTICLES" != "1" ]]; then
-  echo "NOTE: SKIP_ARTICLES=0 — running archived GDELT Doc API collector"
-  echo "      Primary MSS still reads data/raw/gdelt_bq.json (not news.py output)"
-  STEPS+=("src/archive/news.py")
-else
-  echo "NOTE: SKIP_ARTICLES=1 — skipping GDELT Doc API (MSS uses data/raw/gdelt_bq.json)"
-fi
-
 STEPS+=(
   "src/compute_mss.py"
   "src/compute_expected_coverage.py"
@@ -86,7 +77,6 @@ echo "======================================================="
 echo "Project root : $ROOT"
 echo "Python       : $PYTHON"
 echo "SKIP_GEE     : $SKIP_GEE"
-echo "SKIP_ARTICLES: $SKIP_ARTICLES"
 echo "SETUP_DEPS   : $SETUP_DEPS"
 echo "Primary model: NegBin log_ratio on article counts (MSS total_articles)"
 echo "Steps        : ${#STEPS[@]}"

@@ -123,7 +123,7 @@ flowchart LR
 | 항목 | 내용 |
 | --- | --- |
 | 액터 | 연구자, GDELT BigQuery |
-| 목적 | 기사량·점유율·최초보도 지연·보도 지속일을 합성 |
+| 목적 | 기사 점유율·최초보도 지연·보도 지속일을 합성 (S_sov, S_TTFR, S_CD) |
 | 사전조건 | `data/gdelt_bq.json` |
 | 주 흐름 | 파트 병합 → 이벤트 집계 → 성분 정규화 → AHP 가중(Entropy는 민감도) |
 | 결과 | `data/mss_results.csv`, 가중치 메타/출처 파일 |

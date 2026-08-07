@@ -15,7 +15,7 @@ The pipeline has four linked pieces:
 1. **Physical Severity Score (PSS)**
    flood extent from Sentinel-1/2 imagery (SITS + NDWI/SAR fallback) combined with exposed population. 
 3. **Media Salience Score (MSS)**
-   multilingual GDELT coverage aggregated into volume, share-of-voice, time-to-first-report, and coverage duration (AHP weights kept for sensitivity).
+   multilingual GDELT coverage aggregated into share-of-voice, time-to-first-report, and coverage duration (3-component AHP; Entropy/Equal for sensitivity).
 5. **Expected coverage**
    A sparse Negative Binomial model predicts how many articles a disaster should attract given severity, deaths, and onset year. This replaces naïve Min-Max discrepancy scores that outliers can distort.
 7. **Discrepancy Index (`log_ratio`)**

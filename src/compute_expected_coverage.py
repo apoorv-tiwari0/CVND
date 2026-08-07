@@ -313,7 +313,7 @@ def format_mss_weight_section() -> str:
     with open(meta_path, encoding="utf-8") as f:
         meta = json.load(f)
 
-    feats = meta.get("features", ["S_vol", "S_sov", "S_TTFR", "S_CD"])
+    feats = meta.get("features", ["S_sov", "S_TTFR", "S_CD"])
     w = meta.get("weights", {})
     sens = meta.get("sensitivity_vs_primary", meta.get("sensitivity_vs_fixed", {}))
     n_events = meta.get("n_events", "n/a")

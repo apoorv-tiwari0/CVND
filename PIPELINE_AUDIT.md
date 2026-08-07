@@ -140,6 +140,8 @@ df["t_first_days"] = (df["first_date"] - df["onset_date"]).dt.days.clip(lower=0)
 <a id="5"></a>
 ## 5. [높음] `S_vol`과 `S_sov`가 완전 중복, AHP 가중치가 그 중복에 0.75
 
+> **상태 (2026-08):** `S_vol` 제거, MSS는 3요소(`S_sov`, `S_TTFR`, `S_CD`) + 3×3 AHP로 전환 (`fix/remove_volume_from_MSS`).
+
 **위치**: `src/compute_mss.py` Step 4–5, `AHP_MATRIX`
 
 **문제**

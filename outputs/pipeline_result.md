@@ -1,6 +1,6 @@
 # CVND Pipeline Results — Expected Coverage
 
-Generated: `2026-07-22 14:11:36`
+Generated: `2026-08-07 13:39:58`
 
 ## Analysis standard (hybrid)
 
@@ -32,23 +32,23 @@ Generated: `2026-07-22 14:11:36`
 
 ## MSS weight sensitivity
 
-Primary `MSS` in `data/mss_results.csv` uses **AHP-derived** weights
+Primary `MSS` in `data/results/mss_results.csv` uses **AHP-derived** weights
 (Saaty 1980; CR = 0.0000). Entropy weighting is computed on the same
 scaled components for robustness (`MSS_entropy` column).
 
-| Scheme | S_vol | S_sov | S_TTFR | S_CD |
-| --- | --- | --- | --- | --- |
-| AHP (primary) | 0.3750 | 0.3750 | 0.1250 | 0.1250 |
-| Entropy | 0.0356 | 0.6364 | 0.0169 | 0.3111 |
-| Equal | 0.2500 | 0.2500 | 0.2500 | 0.2500 |
+| Scheme | S_sov | S_TTFR | S_CD |
+| --- | --- | --- | --- |
+| AHP (primary) | 0.6000 | 0.2000 | 0.2000 |
+| Entropy | 0.6599 | 0.0175 | 0.3226 |
+| Equal | 0.3333 | 0.3333 | 0.3333 |
 
 | vs AHP MSS | Pearson r | max rank shift | mean rank shift |
 | --- | --- | --- | --- |
-| Entropy | 0.9381 | 66 | 8.69 |
+| Entropy | 0.9768 | 18 | 3.17 |
 
 - MSS events: 167
-- Weight provenance: `data/mss_weight_provenance.csv`
-- Rank stability: `data/mss_rank_stability.csv`
+- Weight provenance: `data/results/mss_weight_provenance.csv`
+- Rank stability: `data/results/mss_rank_stability.csv`
 
 ## Absolute under-coverage (`under_flag`)
 
@@ -74,7 +74,7 @@ scaled components for robustness (`MSS_entropy` column).
 Model:              GLM              AIC:            2459.4780
 Link Function:      Log              BIC:            -431.7218
 Dependent Variable: n_articles_0_14  Log-Likelihood: -1216.7  
-Date:               2026-07-22 14:11 LL-Null:        -1259.3  
+Date:               2026-08-07 13:39 LL-Null:        -1259.3  
 No. Observations:   132              Deviance:       149.33   
 Df Model:           12               Pearson chi2:   153.     
 Df Residuals:       119              Scale:          1.0000   
@@ -204,7 +204,7 @@ R² = 0.1044
 
 ## Output files
 
-- `/Users/rokpolar/Documents/CU_CDI/CVND/data/expected_coverage.csv` (primary)
-- `/Users/rokpolar/Documents/CU_CDI/CVND/data/state_expected_coverage.csv`
-- `/Users/rokpolar/Documents/CU_CDI/CVND/data/events_quarantine.csv`
+- `/Users/rokpolar/Documents/CU_CDI/CVND/data/results/expected_coverage.csv` (primary)
+- `/Users/rokpolar/Documents/CU_CDI/CVND/data/results/state_expected_coverage.csv`
+- `/Users/rokpolar/Documents/CU_CDI/CVND/data/raw/events_quarantine.csv`
 - `/Users/rokpolar/Documents/CU_CDI/CVND/outputs/pipeline_result.md`

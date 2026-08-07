@@ -5,7 +5,8 @@ Primary input: data/raw/gdelt_bq.json (BigQuery export).
 Does NOT read news.py / raw_gdelt.csv — that path is optional/legacy
 (see src/archive/news.py).
 
-Primary MSS uses AHP weights; Entropy/Equal retained for sensitivity.
+Primary MSS uses 3 components (S_sov, S_TTFR, S_CD) with AHP weights;
+Entropy/Equal retained for sensitivity. Article volume (S_vol) is excluded.
 """
 
 from __future__ import annotations
@@ -25,15 +26,14 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from cvnd_layout import data_path  # noqa: E402
 
-MSS_FEATURES = ["S_vol", "S_sov", "S_TTFR", "S_CD"]
+MSS_FEATURES = ["S_sov", "S_TTFR", "S_CD"]
 AHP_LABELS = MSS_FEATURES
 
-# Pairwise judgments (Saaty 1–9): see module doc in Step 5 below.
+# SOV moderately more important than timing (mirrors old vol/sov vs time 3:1 ratio).
 AHP_MATRIX = np.array([
-    [1,   1,   3,   3],
-    [1,   1,   3,   3],
-    [1/3, 1/3, 1,   1],
-    [1/3, 1/3, 1,   1],
+    [1,   3,   3],
+    [1/3, 1,   1],
+    [1/3, 1,   1],
 ])
 
 
@@ -221,17 +221,7 @@ def main() -> None:
     N_total = df["total_articles"].sum()
     print(f"  N_total_news (all events): {N_total:,}")
 
-    skew = df["total_articles"].skew()
-    print(f"  Article count skewness: {skew:.2f}")
-    if abs(skew) > 2:
-        print("  Skewness > 2 → using log scaling for S_vol")
-        df["vol_scaled"] = np.log1p(df["total_articles"])
-    else:
-        print("  Skewness <= 2 → using linear scaling for S_vol")
-        df["vol_scaled"] = df["total_articles"].astype(float)
-
     scaler = MinMaxScaler()
-    df["S_vol"] = scaler.fit_transform(df[["vol_scaled"]]).round(4)
     df["S_sov"] = scaler.fit_transform(
         (df["total_articles"] / N_total).values.reshape(-1, 1)
     ).round(4)
@@ -252,9 +242,9 @@ def main() -> None:
     print("-" * 55)
     ahp = compute_ahp_weights(AHP_MATRIX, AHP_LABELS)
     w_ahp = weights_vector(ahp)
-    W_VOL, W_SOV, W_TTFR, W_CD = w_ahp
+    W_SOV, W_TTFR, W_CD = w_ahp
     print(
-        f"\n  AHP weights: vol={W_VOL:.4f}, sov={W_SOV:.4f}, "
+        f"\n  AHP weights: sov={W_SOV:.4f}, "
         f"TTFR={W_TTFR:.4f}, CD={W_CD:.4f}  (sum={w_ahp.sum():.4f})"
     )
 
@@ -265,8 +255,8 @@ def main() -> None:
     w_entropy = entropy_weights(components_df.values)
     print_entropy_weights(AHP_LABELS, w_entropy, components_df.values)
     print(
-        f"\n  Entropy weights: vol={w_entropy[0]:.4f}, sov={w_entropy[1]:.4f}, "
-        f"TTFR={w_entropy[2]:.4f}, CD={w_entropy[3]:.4f}  (sum={w_entropy.sum():.4f})"
+        f"\n  Entropy weights: sov={w_entropy[0]:.4f}, "
+        f"TTFR={w_entropy[1]:.4f}, CD={w_entropy[2]:.4f}  (sum={w_entropy.sum():.4f})"
     )
 
     # ── Step 7: MSS under AHP (primary) and entropy (robustness) ──────────────────
@@ -280,21 +270,20 @@ def main() -> None:
     print("\n[Step 8] Rank stability across all weight sets + γ sensitivity")
     print("-" * 55)
 
+    equal_w = np.full(3, 1 / 3)
     rank_configs = {
         "AHP (primary)": df["MSS"],
         "Entropy": df["MSS_entropy"],
-        "Equal (0.25×4)": weighted_mss(df, np.full(4, 0.25)),
-        "Vol-heavy": weighted_mss(df, np.array([0.4, 0.4, 0.1, 0.1])),
-        "Time-heavy": weighted_mss(df, np.array([0.2, 0.2, 0.3, 0.3])),
+        "Equal (1/3×3)": weighted_mss(df, equal_w),
+        "SOV-heavy": weighted_mss(df, np.array([0.6, 0.2, 0.2])),
+        "Time-heavy": weighted_mss(df, np.array([0.2, 0.4, 0.4])),
         "AHP γ=0.1": (
-            W_VOL * df["S_vol"]
-            + W_SOV * df["S_sov"]
+            W_SOV * df["S_sov"]
             + W_TTFR * df["S_TTFR_g01"]
             + W_CD * df["S_CD"]
         ).round(4),
         "AHP γ=0.5": (
-            W_VOL * df["S_vol"]
-            + W_SOV * df["S_sov"]
+            W_SOV * df["S_sov"]
             + W_TTFR * df["S_TTFR_g05"]
             + W_CD * df["S_CD"]
         ).round(4),
@@ -323,15 +312,15 @@ def main() -> None:
     print("\n  Weight comparison table (for methods section):")
     print(
         f"  {'Criterion':<10} {'AHP':>8} {'Entropy':>10} {'Equal':>8} "
-        f"{'Vol-heavy':>10} {'Time-heavy':>11}"
+        f"{'SOV-heavy':>10} {'Time-heavy':>11}"
     )
     for i, criterion in enumerate(AHP_LABELS):
-        equal = 0.25
-        vol_heavy = 0.4 if criterion in ("S_vol", "S_sov") else 0.1
-        time_heavy = 0.2 if criterion in ("S_vol", "S_sov") else 0.3
+        equal = 1 / 3
+        sov_heavy = 0.6 if criterion == "S_sov" else 0.2
+        time_heavy = 0.4 if criterion == "S_sov" else 0.4
         print(
             f"  {criterion:<10} {w_ahp[i]:>8.4f} {w_entropy[i]:>10.4f} "
-            f"{equal:>8.4f} {vol_heavy:>10.4f} {time_heavy:>11.4f}"
+            f"{equal:>8.4f} {sov_heavy:>10.4f} {time_heavy:>11.4f}"
         )
 
     entropy_corr = float(df["MSS"].corr(df["MSS_entropy"]))
@@ -348,8 +337,7 @@ def main() -> None:
         ("γ=0.5", "S_TTFR_g05"),
     ]:
         mss_g = (
-            W_VOL * df["S_vol"]
-            + W_SOV * df["S_sov"]
+            W_SOV * df["S_sov"]
             + W_TTFR * df[g_col]
             + W_CD * df["S_CD"]
         )
@@ -362,9 +350,9 @@ def main() -> None:
         "weights": {
             "ahp": w_ahp.tolist(),
             "entropy": w_entropy.tolist(),
-            "equal": [0.25, 0.25, 0.25, 0.25],
-            "vol_heavy": [0.4, 0.4, 0.1, 0.1],
-            "time_heavy": [0.2, 0.2, 0.3, 0.3],
+            "equal": equal_w.tolist(),
+            "sov_heavy": [0.6, 0.2, 0.2],
+            "time_heavy": [0.2, 0.4, 0.4],
         },
         "ahp_cr": ahp["CR"],
         "ahp_lambda_max": ahp["lambda_max"],
@@ -407,7 +395,6 @@ def main() -> None:
             "indic_share",
             "coverage_days",
             "t_first_days",
-            "S_vol",
             "S_sov",
             "S_TTFR",
             "S_CD",
@@ -454,26 +441,23 @@ def main() -> None:
     weight_record = pd.DataFrame([
         {
             "method": "AHP",
-            "S_vol": w_ahp[0],
-            "S_sov": w_ahp[1],
-            "S_TTFR": w_ahp[2],
-            "S_CD": w_ahp[3],
+            "S_sov": w_ahp[0],
+            "S_TTFR": w_ahp[1],
+            "S_CD": w_ahp[2],
             "CR": ahp["CR"],
         },
         {
             "method": "Entropy",
-            "S_vol": w_entropy[0],
-            "S_sov": w_entropy[1],
-            "S_TTFR": w_entropy[2],
-            "S_CD": w_entropy[3],
+            "S_sov": w_entropy[0],
+            "S_TTFR": w_entropy[1],
+            "S_CD": w_entropy[2],
             "CR": None,
         },
         {
             "method": "Equal",
-            "S_vol": 0.25,
-            "S_sov": 0.25,
-            "S_TTFR": 0.25,
-            "S_CD": 0.25,
+            "S_sov": 1 / 3,
+            "S_TTFR": 1 / 3,
+            "S_CD": 1 / 3,
             "CR": None,
         },
     ])
